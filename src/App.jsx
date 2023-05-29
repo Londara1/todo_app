@@ -81,20 +81,30 @@ function App() {
   }
 
   const dragItem = useRef(null);
-  const dragOverItem = useRef(null);
+  const dragTargetItem = useRef(null);
 
-  const handleSort = () => {
-    let _toDoLists = [...toDoLists]
 
-    const draggedItemContent = _toDoLists.splice(dragItem.current, 1) [0]
+  const handleDragStart = (event, index) => {
+    dragItem.current = index;
+  };
 
-    _toDoLists.splice(dragOverItem.current, 0, draggedItemContent)
+  const handleDragEnter = (event, index) => {
+    dragTargetItem.current = index;
+  };
 
-    dragItem.current = null
-    dragOverItem.current = null
 
-    setToDoList(_toDoLists)
-  }
+  const handleDragEnd = () => {
+    if (dragItem.current !== null && dragTargetItem.current !== null) {
+      const updatedList = [...toDoLists];
+      const draggedItem = updatedList[dragItem.current];
+      updatedList.splice(dragItem.current, 1);
+      updatedList.splice(dragTargetItem.current, 0, draggedItem);
+      setToDoList(updatedList);
+    }
+    dragItem.current = null;
+    dragTargetItem.current = null;
+  };
+
 
   return (
     <>
@@ -113,12 +123,11 @@ function App() {
 
 
       <div className={`${dark ? "bg-darkmode text-listcolordark" : "bg-white text-listcolor"} rounded-tl rounded-tr w-full`}>
-          {displayList.map((element) => (
-            <div key={element.id} draggable className='cursor-move' 
-            onDragStart={(e) => dragItem.current = element.id }
-            onDragEnter={(e) => dragOverItem.current = element.id}
-            onDragEnd={handleSort}
-            onDragOver={(e) => e.preventDefault()}>
+          {displayList.map((element, index) => (
+            <div key={element.id} draggable
+            onDragStart={(e) => handleDragStart(e, index)}
+            onDragEnter={(e) => handleDragEnter(e, index)}
+            onDragEnd={handleDragEnd}>
             <div className= "flex pt-4 pl-5 pb-4 pr-5 justify-between items-center">
               <div className="flex justify-center">
                 <label className={`${element.completed ? "line-through text-completedcolor" : ""} ${dark && element.completed ? "text-completedcolordark" : ""} flex gap-3 cursor-pointer`} htmlFor={element.id} >
